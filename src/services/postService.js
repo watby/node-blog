@@ -1,46 +1,57 @@
 const db = require('../models');
 
 class PostService {
-	getAll(){
-		let data;
-		try {
-			data = db.posts;
-		} catch(err) {
-			throw ({ status: 500, message: 'Database offline' });
-		}
+	db;
 
-		return data;
+	constructor(db) {
+		this.db = db;
 	}
 
-	getById(id){
-		if (typeof id === 'undefined') {
-			throw ({ status: 400, message: 'No id provided' })
-		}
+	async getAllAsync() {
+        let posts;
+        try {
+            posts = await this.db.posts.readPostsAsync();
+        } catch (err) {
+            throw ({status: 500, message: 'Database offline'});
+        }
 
-		let post;
-		try {
-			post = db.posts.find(post => post.id === id);
-		} catch(err){
-			throw ({ status: 500, message: 'Database offline' })
-		}
-		
-		if(!post){
-			throw ({ status: 404, message: 'Post not found' });
-		}
+        return posts;
+    }
 
-		return post;
-	}
+    async getByIdAsync(id) {
+        if (typeof id === 'undefined') {
+            throw ({status: 400, message: 'No id provided'})
+        }
 
-	insert(data){
-		const post = {
-			...data,
-			id: db.posts.length + 1
-		}
+        let post;
+        try {
+			const posts = await this.db.posts.readPostsAsync();
+            post = posts.find(post => post.id === id);
+        } catch (err) {
+            throw ({status: 500, message: 'Database offline'})
+        }
 
-		db.posts.push(post);
+        if (!post) {
+            throw ({status: 404, message: 'Post not found'});
+        }
 
-		return post;
-	}
+        return post;
+    }
+
+    async addAsync(data) {
+		const posts = await this.db.posts.readPostsAsync();
+
+        const post = {
+            ...data,
+            id: posts.length + 1
+        };
+
+		posts.push(post);
+
+        await this.db.posts.writePostsAsync(posts);
+
+        return post;
+    }
 }
 
-module.exports = new PostService();
+module.exports = new PostService(db);
