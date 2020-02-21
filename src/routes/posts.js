@@ -25,6 +25,28 @@ router.get('/:id', async (req, res) => {
 	res.send(data);
 });
 
+router.delete('/:id', async (req, res) => {
+	let data;
+	try {
+		data = await postService.deleteByIdAsync(Number(req.params.id));
+	} catch(err) {
+		res.status(err.status).send({ message: err.message });
+	}
+
+	res.send(data);
+});
+
+router.put('/:id', async (req, res) => {
+	let data;
+	try {
+		data = await postService.setByIdAsync(Number(req.params.id), req.body);
+	} catch(err) {
+		res.status(err.status).send({ message: err.message });
+	}
+
+	res.send(data);
+});
+
 router.post('/', async (req, res) => {
 	let data;
 	try {
